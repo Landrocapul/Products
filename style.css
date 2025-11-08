@@ -1,437 +1,312 @@
-  /* Reset some defaults */
-  * {
-      box-sizing: border-box;
-      margin: 0;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      
-      background: #f0f4f8;
-      color: #333;
-    }
-    .box{
+/* =================================
+   1. GLOBAL & TYPOGRAPHY
+   ================================= */
+   * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-      margin: 50px;
-      
-      margin-left: 300px;
-      margin-right: 300px;
-    }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f8f9fa; /* Softer background */
+    color: #212529;
+    line-height: 1.6;
+}
 
-    .table{
+h1, h2, h3 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
 
-      margin: 50px;
-    }
-    
-    /* Form Container */
-    form {
-      background: #ffffff;
-      padding: 30px 25px;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
-      transition: box-shadow 0.3s ease;
-    }
-    
-    form:hover {
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Inputs */
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"] {
-      width: 100%;
-      padding: 12px 15px;
-      margin: 10px 0 20px;
-      border: 1.8px solid #ddd;
-      border-radius: 6px;
-      font-size: 1rem;
-      transition: border-color 0.3s ease;
-    }
-    
-    input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="password"]:focus,
-    input[type="number"]:focus {
-      border-color: #007BFF;
-      outline: none;
-    }
-    
-    /* Buttons */
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
-    }
-    
-    button:hover {
-      background-color: #0056b3;
-      box-shadow: 0 6px 15px rgba(0, 86, 179, 0.6);
-    }
-    
-    /* Error Messages */
-    .error {
-      background: #fdecea;
-      color: #d93025;
-      padding: 12px 15px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-weight: 600;
-      box-shadow: inset 0 0 8px rgba(217, 48, 37, 0.15);
-    }
-    
-    /* Toggle Links */
-    .toggle-link {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.95rem;
-      color: #555;
-      user-select: none;
-    }
-    
-    .toggle-link a {
-      color: #007BFF;
-      cursor: pointer;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
-    
-    .toggle-link a:hover {
-      text-decoration: underline;
-      color: #0056b3;
-    }
-    
-    /* Hidden class */
-    .hidden {
-      display: none !important;
-    }
-    
-    /* Table Styles for dashboard/products */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 30px;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-    }
-    
-    th,
-    td {
-      padding: 14px 20px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-      font-size: 0.95rem;
-    }
-    
-    th {
-      background-color: #f7f9fc;
-      font-weight: 700;
-      color: #444;
-    }
-    
-    tr:hover {
-      background-color: #f1faff;
-    }
-    
-    .button {
-      display: inline-block;
-      padding: 8px 16px;
-      text-decoration: none;
-      background-color: #007BFF;
-      color: white;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 3px 8px rgba(0, 123, 255, 0.4);
-      cursor: pointer;
-      border: none;
-    }
-    
-    .button:hover {
-      background-color: #0056b3;
-      box-shadow: 0 5px 15px rgba(0, 86, 179, 0.6);
-    }
-    
-    /* Responsive tweaks */
-    @media (max-width: 480px) {
-      body {
-        padding: 15px;
-      }
-      form {
-        padding: 20px 15px;
-      }
-      input[type="text"],
-      input[type="email"],
-      input[type="password"],
-      input[type="number"] {
-        padding: 10px 12px;
-        margin-bottom: 15px;
-      }
-      button {
-        font-size: 1rem;
-        padding: 10px;
-      }
-      table,
-      th,
-      td {
-        font-size: 0.85rem;
-      }
-    }
-    
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; color: #343a40; }
+h3 { font-size: 1.2rem; color: #495057; }
 
-    /* NAVBAR */
-  .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #003366;
-      padding: 12px 24px;
-      color: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    
-    .company-name {
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: 1.2px;
-    }
-    
-    .navbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .icon-button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: #fff;
-      position: relative;
-      padding: 6px;
-      border-radius: 4px;
-      transition: background-color 0.25s ease;
-    }
-    
-    .icon-button:hover,
-    .icon-button:focus {
-      background-color: rgba(255,255,255,0.2);
-      outline: none;
-    }
-    
-    .notification-badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: #dc3545;
-      color: white;
-      font-size: 0.65rem;
-      padding: 2px 5px;
-      border-radius: 12px;
-      font-weight: 700;
-      line-height: 1;
-      user-select: none;
-    }
-    
-    
+p {
+    margin-bottom: 1rem;
+    color: #495057;
+}
 
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
 
-    /* Reset some default styles */
-  body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-    }
-    
-    /* NAVBAR styles (from before, keep them!) */
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #003366;
-      padding: 12px 24px;
-      color: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 56px;
-      z-index: 1000;
-    }
-    
-    .company-name {
-      font-weight: 700;
-      font-size: 1.5rem;
-      letter-spacing: 1.2px;
-    }
-    
-    .navbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    
-    .icon-button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: #fff;
-      position: relative;
-      padding: 6px;
-      border-radius: 4px;
-      transition: background-color 0.25s ease;
-    }
-    
-    .icon-button:hover,
-    .icon-button:focus {
-      background-color: rgba(255,255,255,0.2);
-      outline: none;
-    }
-    
-    .notification-badge {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: #dc3545;
-      color: white;
-      font-size: 0.65rem;
-      padding: 2px 5px;
-      border-radius: 12px;
-      font-weight: 700;
-      line-height: 1;
-      user-select: none;
-    }
-    
-    /* SIDEBAR */
-    .sidebar {
-      position: fixed;
-      top: 56px; /* height of navbar */
-      left: 0;
-      width: 220px;
-      height: calc(100% - 56px);
-      background-color: #0b3d91;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px 0;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-      z-index: 999;
-    }
-    
-    .sidebar-menu {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .sidebar-menu li {
-      margin: 0;
-    }
-    
-    .sidebar-menu li a {
-      display: flex;
-      align-items: center;
-      padding: 12px 24px;
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: background-color 0.3s ease;
-    }
-    
-    .sidebar-menu li a:hover,
-    .sidebar-menu li a:focus {
-      background-color: #063970;
-      outline: none;
-    }
-    
-    .menu-icon {
-      margin-right: 12px;
-      font-size: 1.2rem;
-    }
-    
-    /* Separate logout to bottom */
-    .logout-menu {
-      margin-top: auto;
-      border-top: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    /* MAIN CONTENT */
-    .main-content {
-      margin-left: 220px; /* width of sidebar */
-      padding: 80px 24px 24px; /* top padding includes navbar height */
-      min-height: 100vh;
-      background-color: #f9f9f9;
-    }
-    
-    /* Table & buttons styles (keep yours or add as needed) */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-    
-    th, td {
-      text-align: left;
-      padding: 8px;
-      border-bottom: 1px solid #ddd;
-    }
-    
-    .action-link {
-      color: #003366;
-      text-decoration: none;
-      margin-right: 8px;
-    }
-    
-    .action-link.delete-link {
-      color: #d9534f;
-    }
-    
-    .action-link:hover {
-      text-decoration: underline;
-    }
-    /* Style for sortable table headers */
-/* Dashboard Stats */
-.stat-container {
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+/* =================================
+   2. LAYOUT (NAV, SIDEBAR, MAIN)
+   ================================= */
+
+/* --- NAVBAR (Now white) --- */
+.navbar {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff; /* White navbar */
+    padding: 12px 24px;
+    color: #333; /* Dark text */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Softer shadow */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 1000;
+}
+
+.company-name {
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    color: #007bff; /* Brand color */
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #6c757d; /* Gray icons */
+    position: relative;
+    padding: 6px;
+    border-radius: 50%;
+    transition: background-color 0.25s ease;
+}
+
+.icon-button:hover,
+.icon-button:focus {
+    background-color: #f1f3f5; /* Light gray hover */
+    outline: none;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: #dc3545;
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 5px;
+    border-radius: 12px;
+}
+
+/* --- SIDEBAR (Dark) --- */
+.sidebar {
+    position: fixed;
+    top: 60px; /* Updated navbar height */
+    left: 0;
+    width: 230px; /* Slightly wider */
+    height: calc(100% - 60px);
+    background-color: #192A4C; /* Professional dark blue */
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 20px;
+    z-index: 999;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    color: #adb5bd; /* Lighter gray for text */
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-menu li a:hover {
+    background-color: rgba(255,255,255, 0.05);
+    color: #ffffff;
+    border-left-color: #007bff;
+}
+
+/* This is the new "Active" state */
+.sidebar-menu li a.active {
+    color: #ffffff;
+    font-weight: 600;
+    background-color: rgba(0,0,0, 0.2);
+    border-left-color: #007bff;
+}
+
+.menu-icon {
+    margin-right: 12px;
+    font-size: 1.1rem;
+    width: 20px;
+}
+
+.logout-menu {
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* --- MAIN CONTENT --- */
+.main-content {
+    margin-left: 230px; /* Match sidebar width */
+    padding: 40px;
+    padding-top: 100px; /* 60px nav + 40px padding */
+    min-height: 100vh;
+}
+
+/* =================================
+   3. COMPONENTS (Cards, Forms, Tables)
+   ================================= */
+
+/* --- CARD --- */
+/* This is a new wrapper we will add */
+.card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 24px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
+    margin-bottom: 24px;
+}
+
+/* --- FORMS --- */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+}
+
+/* --- BUTTONS --- */
+button,
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+button:hover,
+.button:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.secondary-button {
+    background-color: #6c757d;
+}
+.secondary-button:hover {
+    background-color: #5a6268;
+}
+
+/* --- TABLES --- */
+.table-wrapper {
+    overflow-x: auto; /* For responsive tables */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 0.9rem;
+}
+
+th,
+td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+}
+
+tr:hover {
+    background-color: #f1f3f5;
+}
+
+.action-link {
+    font-weight: 600;
+    margin-right: 8px;
+}
+.action-link.delete-link {
+    color: #dc3545;
+}
+
+th a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+th a:hover {
+    color: #007bff;
+}
+
+/* --- STATS BOXES --- */
+.stat-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
-    margin-top: 20px;
-    flex-wrap: wrap;
 }
 
 .stat-box {
     background: #fff;
     border-radius: 10px;
     padding: 20px 25px;
-    flex: 1;
-    min-width: 200px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e9ecef;
 }
 
 .stat-box h3 {
     margin: 0 0 10px;
-    color: #555;
+    color: #6c757d;
     font-size: 1rem;
     font-weight: 600;
 }
@@ -439,40 +314,51 @@
 .stat-box p {
     font-size: 2rem;
     font-weight: 700;
-    color: #007BFF;
+    color: #007bff;
     margin: 0;
 }
 
-/* Fix for sorting link (make sure it includes action=products) */
-th a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
+/* --- UTILITIES --- */
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 12px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
 }
 
-th a:hover {
-    color: #007BFF;
-}
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .sidebar {
+/* =================================
+   4. RESPONSIVE
+   ================================= */
+@media (max-width: 768px) {
+    .sidebar {
         width: 60px;
-        padding: 20px 0;
-      }
-      .sidebar-menu li a {
+    }
+    .sidebar-menu li a {
         justify-content: center;
         padding: 12px 0;
-        font-size: 0;
-      }
-      .menu-icon {
+        border-left-width: 0;
+    }
+    .sidebar-menu li a:hover,
+    .sidebar-menu li a.active {
+        border-left-width: 0;
+    }
+    .menu-icon {
         margin: 0;
         font-size: 1.5rem;
-      }
-      .main-content {
-        margin-left: 60px;
-        padding: 80px 12px 12px;
-      }
     }
-    
-    
+    .sidebar-menu li a span {
+        display: none; /* Hide text, show icon */
+    }
+    .main-content {
+        margin-left: 60px;
+        padding: 80px 15px 15px;
+    }
+    .company-name {
+        font-size: 1.2rem;
+    }
+    .stat-container {
+        grid-template-columns: 1fr;
+    }
+}
