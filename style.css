@@ -411,14 +411,47 @@
       text-decoration: underline;
     }
     /* Style for sortable table headers */
+/* Dashboard Stats */
+.stat-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.stat-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px 25px;
+    flex: 1;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #eee;
+}
+
+.stat-box h3 {
+    margin: 0 0 10px;
+    color: #555;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.stat-box p {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #007BFF;
+    margin: 0;
+}
+
+/* Fix for sorting link (make sure it includes action=products) */
 th a {
-  text-decoration: none;
-  color: inherit; /* Use the default header color */
-  display: block; /* Make the whole header clickable */
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
 th a:hover {
-  color: #007BFF; /* Highlight on hover */
+    color: #007BFF;
 }
     
     /* Responsive adjustments */

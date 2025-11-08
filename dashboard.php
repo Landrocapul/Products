@@ -10,18 +10,20 @@ if (!isset($_SESSION['user_id'])) {
 $user_id = $_SESSION['user_id'];
 $action = $_GET['action'] ?? '';
 $error = '';
-$categories = []; // Initialize categories array
+$categories = []; // Initialize
 
-// Fetch categories for forms
-$cat_stmt = $pdo->prepare("SELECT * FROM categories WHERE created_by = :uid ORDER BY name");
-$cat_stmt->execute(['uid' => $user_id]);
-$categories = $cat_stmt->fetchAll();
+// Fetch categories for forms (needed for create/edit)
+if ($action === 'create' || $action === 'edit') {
+    $cat_stmt = $pdo->prepare("SELECT * FROM categories WHERE created_by = :uid ORDER BY name");
+    $cat_stmt->execute(['uid' => $user_id]);
+    $categories = $cat_stmt->fetchAll();
+}
 
 // Handle product deletion
 if ($action === 'delete' && isset($_GET['id'])) {
     $stmt = $pdo->prepare("DELETE FROM products WHERE id = :id AND created_by = :uid");
     $stmt->execute(['id' => $_GET['id'], 'uid' => $user_id]);
-    header("Location: dashboard.php");
+    header("Location: dashboard.php?action=products"); // Redirect back to product list
     exit;
 }
 
@@ -36,7 +38,7 @@ if ($action === 'create' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmt = $pdo->prepare("INSERT INTO products (name, price, category_id, created_by) VALUES (:name, :price, :cid, :uid)");
         $stmt->execute(['name' => $name, 'price' => $price, 'cid' => $category_id, 'uid' => $user_id]);
-        header("Location: dashboard.php");
+        header("Location: dashboard.php?action=products"); // Redirect back to product list
         exit;
     }
 }
@@ -64,56 +66,64 @@ if ($action === 'edit' && isset($_GET['id'])) {
         } else {
             $stmt = $pdo->prepare("UPDATE products SET name = :name, price = :price, category_id = :cid WHERE id = :id AND created_by = :uid");
             $stmt->execute(['name' => $name, 'price' => $price, 'cid' => $category_id, 'id' => $id, 'uid' => $user_id]);
-            header("Location: dashboard.php");
+            header("Location: dashboard.php?action=products"); // Redirect back to product list
             exit;
         }
     }
 }
 
-// Default: Fetch all products for the logged-in user
-// Default: Fetch all products for the logged-in user
+// Fetch data for product list page
+if ($action === 'products') {
+    // 1. Whitelist of allowed columns for sorting
+    $allowed_sort_cols = [
+        'name' => 'p.name',
+        'category' => 'c.name',
+        'price' => 'p.price',
+        'created_at' => 'p.created_at'
+    ];
+    // 2. Get sort parameters from URL, with defaults
+    $sort_key = $_GET['sort'] ?? 'created_at';
+    $order_key = $_GET['order'] ?? 'desc';
+    // 3. Validate and set the SQL sort column
+    if (!array_key_exists($sort_key, $allowed_sort_cols)) {
+        $sort_key = 'created_at';
+    }
+    $sort_sql_col = $allowed_sort_cols[$sort_key];
+    // 4. Validate and set the SQL sort order
+    $order = strtoupper($order_key);
+    if ($order !== 'ASC' && $order !== 'DESC') {
+        $order = 'DESC';
+    }
+    // 5. Determine the *next* order for the links
+    $next_order = ($order === 'ASC') ? 'desc' : 'asc';
+    
+    $stmt = $pdo->prepare("
+        SELECT p.*, c.name AS category_name 
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.created_by = :uid 
+        ORDER BY $sort_sql_col $order
+    ");
+    $stmt->execute(['uid' => $user_id]);
+    $products = $stmt->fetchAll();
+}
+
+// Fetch data for Home Dashboard (default action)
 if ($action === '') {
-  // --- NEW SORTING LOGIC ---
-  
-  // 1. Whitelist of allowed columns for sorting
-  $allowed_sort_cols = [
-      'name' => 'p.name',
-      'category' => 'c.name',
-      'price' => 'p.price',
-      'created_at' => 'p.created_at'
-  ];
+    // 1. Total products
+    $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM products WHERE created_by = :uid");
+    $stmt_count->execute(['uid' => $user_id]);
+    $total_products = $stmt_count->fetchColumn();
 
-  // 2. Get sort parameters from URL, with defaults
-  $sort_key = $_GET['sort'] ?? 'created_at';
-  $order_key = $_GET['order'] ?? 'desc';
-
-  // 3. Validate and set the SQL sort column
-  if (!array_key_exists($sort_key, $allowed_sort_cols)) {
-      $sort_key = 'created_at'; // Default to created_at
-  }
-  $sort_sql_col = $allowed_sort_cols[$sort_key];
-
-  // 4. Validate and set the SQL sort order
-  $order = strtoupper($order_key);
-  if ($order !== 'ASC' && $order !== 'DESC') {
-      $order = 'DESC'; // Default to DESC
-  }
-
-  // 5. Determine the *next* order for the links
-  $next_order = ($order === 'ASC') ? 'desc' : 'asc';
-  
-  // --- END NEW SORTING LOGIC ---
-
-  // MODIFIED QUERY: Use a LEFT JOIN and the dynamic $order_by_sql
-  $stmt = $pdo->prepare("
-      SELECT p.*, c.name AS category_name 
-      FROM products p
-      LEFT JOIN categories c ON p.category_id = c.id
-      WHERE p.created_by = :uid 
-      ORDER BY $sort_sql_col $order
-  ");
-  $stmt->execute(['uid' => $user_id]);
-  $products = $stmt->fetchAll();
+    // 2. Total categories
+    $stmt_cat = $pdo->prepare("SELECT COUNT(*) FROM categories WHERE created_by = :uid");
+    $stmt_cat->execute(['uid' => $user_id]);
+    $total_categories = $stmt_cat->fetchColumn();
+    
+    // 3. Total inventory value
+    $stmt_val = $pdo->prepare("SELECT SUM(price) FROM products WHERE created_by = :uid");
+    $stmt_val->execute(['uid' => $user_id]);
+    $total_value = $stmt_val->fetchColumn();
 }
 ?>
 
@@ -128,27 +138,12 @@ if ($action === '') {
 <body>
 
 <nav class="navbar">
-  <div class="navbar-left">
-    <span class="company-name">MALL OF CAP</span>
-  </div>
-  <div class="navbar-right">
-    <button class="icon-button" title="Notifications" aria-label="Notifications">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 1.985-1.75H6.015A2 2 0 0 0 8 16zm.104-14.11c.058-.3-.12-.575-.43-.575-.318 0-.489.282-.43.575C7.522 1.488 7 2.863 7 4v2.5l-.5.5V7h3v-.5l-.5-.5V4c0-1.137-.522-2.512-1.396-2.11z"/><path d="M8 1a3 3 0 0 1 3 3v3.5c0 .5.5 1 1 1v.5h-8v-.5c.5 0 1-.5 1-1V4a3 3 0 0 1 3-3z"/></svg>
-      <span class="notification-badge">3</span>
-    </button>
-    <button class="icon-button" title="Settings" aria-label="Settings">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.318.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.54 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.318c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.901 2.54-2.54l-.159-.292a.873.873 0 0 1 .52-1.255l.318-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.434-2.54-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.416.764-.42 1.6-1.185 1.184l-.292-.159a1.873 1.873 0 0 0-2.692 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.693-1.115l-.291.16c-.764.415-1.6-.42-1.184-1.185l.159-.292a1.873 1.873 0 0 0-1.116-2.692l-.318-.094c-.835-.246-.835-1.428 0 1.674l.319-.094a1.873 1.873 0 0 0 1.115-2.693l-.16-.291c-.416-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116l.094-.318z"/></svg>
-    </button>
-    <button class="icon-button" title="Account" aria-label="Account" onclick="window.location.href='account.php'">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>
-    </button>
-  </div>
-</nav>
+  </nav>
 
 <aside class="sidebar">
   <ul class="sidebar-menu">
     <li><a href="dashboard.php"><span class="menu-icon">🏠</span> Home</a></li>
-    <li><a href="dashboard.php"><span class="menu-icon">📦</span> Products</a></li>
+    <li><a href="dashboard.php?action=products"><span class="menu-icon">📦</span> Products</a></li>
     <li><a href="categories.php"><span class="menu-icon">🗂️</span> Categories</a></li>
     <li><a href="#"><span class="menu-icon">🏬</span> Stores</a></li>
   </ul>
@@ -174,7 +169,6 @@ if ($action === '') {
     <form method="post" action="dashboard.php?action=create">
       <input type="text" name="name" placeholder="Product Name" required />
       <input type="number" step="0.01" name="price" placeholder="Price" required />
-      
       <label for="category_id">Category:</label>
       <select name="category_id" id="category_id" required>
         <option value="">-- Select a Category --</option>
@@ -182,12 +176,11 @@ if ($action === '') {
           <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
         <?php endforeach; ?>
       </select>
-      
       <button type="submit">Create Product</button>
     </form>
   <?php endif; ?>
 
-  <p><a href="dashboard.php" class="button secondary-button">Back to Dashboard</a></p>
+  <p><a href="dashboard.php?action=products" class="button secondary-button">Back to Products</a></p>
 
 <?php elseif ($action === 'edit' && isset($product)): ?>
 
@@ -200,7 +193,6 @@ if ($action === '') {
   <form method="post" action="dashboard.php?action=edit&id=<?= $product['id'] ?>">
     <input type="text" name="name" value="<?= htmlspecialchars($product['name']) ?>" required />
     <input type="number" step="0.01" name="price" value="<?= htmlspecialchars($product['price']) ?>" required />
-    
     <label for="category_id">Category:</label>
     <select name="category_id" id="category_id" required>
       <option value="">-- Select a Category --</option>
@@ -210,13 +202,12 @@ if ($action === '') {
         </option>
       <?php endforeach; ?>
     </select>
-    
     <button type="submit">Update Product</button>
   </form>
 
-  <p><a href="dashboard.php" class="button secondary-button">Back to Dashboard</a></p>
+  <p><a href="dashboard.php?action=products" class="button secondary-button">Back to Products</a></p>
 
-<?php else: // This is the main product list view ?>
+<?php elseif ($action === 'products'): ?>
 
   <h2>Your Products</h2>
   <p><a href="dashboard.php?action=create" class="button">+ Add New Product</a></p>
@@ -235,7 +226,7 @@ if ($action === '') {
                   $order_for_link = $next_order;
                   $arrow = ($current_order === 'ASC') ? '&uarr;' : '&darr;'; // Up/Down arrow
               }
-              echo "<th><a href=\"?sort=$column&order=$order_for_link\">$text $arrow</a></th>";
+              echo "<th><a href=\"?action=products&sort=$column&order=$order_for_link\">$text $arrow</a></th>";
           }
           
           sort_link('name', 'Name', $sort_key, $order, $next_order);
@@ -262,6 +253,26 @@ if ($action === '') {
       </tbody>
     </table>
   <?php endif; ?>
+
+<?php else: // $action === '' (The new Home Dashboard) ?>
+
+  <h2>Dashboard</h2>
+  <p>Here is a summary of your account.</p>
+  
+  <div class="stat-container">
+      <div class="stat-box">
+          <h3>Total Products</h3>
+          <p><?= $total_products ?></p>
+      </div>
+      <div class="stat-box">
+          <h3>Total Categories</h3>
+          <p><?= $total_categories ?></p>
+      </div>
+      <div class="stat-box">
+          <h3>Inventory Value</h3>
+          <p>$<?= number_format($total_value ?? 0, 2) ?></p>
+      </div>
+  </div>
 
 <?php endif; ?>
 </main>
