@@ -11,8 +11,8 @@
     --sidebar-text: #f0f0f0;  /* Light gray sidebar text */
     --card-bg: #ffffff;
     --card-border: #e9ecef;
-    --button-bg: #cb2121;  /* Red buttons */
-    --button-hover: #a51a1a;  /* Darker red hover */
+    --button-bg: #e74c3c;  /* More vibrant red */
+    --button-hover: #c0392b;  /* Darker vibrant red hover */
     --input-bg: #ffffff;
     --input-border: #ced4da;
     --table-header-bg: #f0f0f0;  /* Light gray table headers */
@@ -33,8 +33,8 @@
     --sidebar-text: #f0f0f0;  /* Light gray sidebar text */
     --card-bg: #2d2d2d;  /* Slightly lighter dark gray for cards */
     --card-border: #404040;  /* Medium gray borders */
-    --button-bg: #cb2121;  /* Same red buttons */
-    --button-hover: #a51a1a;  /* Same darker red hover */
+    --button-bg: #e74c3c;  /* Same vibrant red */
+    --button-hover: #c0392b;  /* Same darker vibrant red hover */
     --input-bg: #2d2d2d;  /* Dark card background for inputs */
     --input-border: #404040;  /* Medium gray borders */
     --table-header-bg: #404040;  /* Medium gray table headers */
@@ -109,7 +109,7 @@ label {
     font-weight: 700;
     font-size: 1.5rem;
     letter-spacing: 1px;
-    color: #007bff; /* Brand color */
+    color: #e74c3c; /* More vibrant red for brand */
 }
 
 .navbar-right {
@@ -222,6 +222,7 @@ label {
     padding: 24px 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border: 1px solid var(--card-border);
+    border-top: 4px solid #e74c3c; /* Red top border for emphasis */
     margin-bottom: 24px;
     transition: background-color 0.3s, border-color 0.3s;
 }
@@ -256,7 +257,7 @@ input[type="number"]:focus,
 select:focus {
     border-color: var(--button-bg);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(203, 33, 33, 0.2);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
 /* --- BUTTONS --- */
@@ -332,7 +333,7 @@ th a {
     display: block;
 }
 th a:hover {
-    color: #cb2121;
+    color: #e74c3c;
 }
 
 /* --- STATS BOXES --- */
@@ -348,6 +349,7 @@ th a:hover {
     padding: 20px 25px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     border: 1px solid #e9ecef;
+    border-top: 4px solid #e74c3c; /* Red top border for emphasis */
 }
 
 .stat-box h3 {
@@ -360,7 +362,7 @@ th a:hover {
 .stat-box p {
     font-size: 2rem;
     font-weight: 700;
-    color: #cb2121;
+    color: #e74c3c;
     margin: 0;
 }
 
@@ -420,7 +422,7 @@ th a:hover {
 #login-form input:focus,
 #register-form input:focus {
     border-color: var(--button-bg);
-    box-shadow: 0 0 0 3px rgba(203, 33, 33, 0.2);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
 #login-form button,
@@ -489,7 +491,7 @@ th a:hover {
   padding: 12px;
   border-radius: 10px;
   background-color: #f0f0f0;
-  color: #cb2121;
+  color: #e74c3c;
   line-height: 1;
 }
 
@@ -653,7 +655,7 @@ textarea {
 textarea:focus {
     border-color: var(--button-bg);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(203, 33, 33, 0.2);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
 /* --- Stock Badges --- */
@@ -1617,6 +1619,32 @@ textarea:focus {
 
 .clear-search-link:hover {
     text-decoration: underline;
+}
+
+/* --- Sales Analytics Cards --- */
+.sales-analytics-cards {
+    margin-top: 20px;
+}
+
+.sales-analytics-cards .card {
+    border-top: 4px solid #e74c3c !important;
+}
+
+.sales-analytics-cards .card .card-body {
+    text-align: center;
+}
+
+.sales-analytics-cards .card .card-body .fas {
+    font-size: 2rem;
+    color: #e74c3c;
+}
+
+.sales-analytics-cards .card .card-body .card-title {
+    color: #e74c3c;
+}
+
+.sales-analytics-cards .card .card-body h2 {
+    color: #e74c3c;
 }
 
 /* =================================

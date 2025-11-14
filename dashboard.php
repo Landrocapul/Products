@@ -877,52 +877,52 @@ if ($action === '') {
   <!-- Sales Analytics Cards -->
   <div class="row g-4 mb-4">
     <div class="col-xl-3 col-lg-6 col-md-6">
-      <div class="card border-primary h-100">
+      <div class="card h-100" style="border-top: 4px solid #e74c3c;">
         <div class="card-body text-center">
           <div class="mb-2">
-            <i class="fas fa-dollar-sign fa-2x text-primary"></i>
+            <i class="fas fa-dollar-sign fa-2x text-danger"></i>
           </div>
-          <h5 class="card-title">Total Revenue</h5>
-          <h2 class="text-primary mb-0">$<?= number_format($total_revenue, 2) ?></h2>
+          <h5 class="card-title text-danger">Total Revenue</h5>
+          <h2 class="text-danger mb-0">$<?= number_format($total_revenue, 2) ?></h2>
           <small class="text-muted">All time earnings</small>
         </div>
       </div>
     </div>
     
     <div class="col-xl-3 col-lg-6 col-md-6">
-      <div class="card border-success h-100">
+      <div class="card h-100" style="border-top: 4px solid #e74c3c;">
         <div class="card-body text-center">
           <div class="mb-2">
-            <i class="fas fa-shopping-cart fa-2x text-success"></i>
+            <i class="fas fa-shopping-cart fa-2x text-danger"></i>
           </div>
-          <h5 class="card-title">Orders This Month</h5>
-          <h2 class="text-success mb-0"><?= $orders_this_month ?></h2>
+          <h5 class="card-title text-danger">Orders This Month</h5>
+          <h2 class="text-danger mb-0"><?= $orders_this_month ?></h2>
           <small class="text-muted">Current month</small>
         </div>
       </div>
     </div>
     
     <div class="col-xl-3 col-lg-6 col-md-6">
-      <div class="card border-info h-100">
+      <div class="card h-100" style="border-top: 4px solid #e74c3c;">
         <div class="card-body text-center">
           <div class="mb-2">
-            <i class="fas fa-calculator fa-2x text-info"></i>
+            <i class="fas fa-calculator fa-2x text-danger"></i>
           </div>
-          <h5 class="card-title">Average Order Value</h5>
-          <h2 class="text-info mb-0">$<?= number_format($avg_order_value ?? 0, 2) ?></h2>
+          <h5 class="card-title text-danger">Average Order Value</h5>
+          <h2 class="text-danger mb-0">$<?= number_format($avg_order_value ?? 0, 2) ?></h2>
           <small class="text-muted">Per order average</small>
         </div>
       </div>
     </div>
     
     <div class="col-xl-3 col-lg-6 col-md-6">
-      <div class="card border-warning h-100">
+      <div class="card h-100" style="border-top: 4px solid #e74c3c;">
         <div class="card-body text-center">
           <div class="mb-2">
-            <i class="fas fa-chart-line fa-2x text-warning"></i>
+            <i class="fas fa-chart-line fa-2x text-danger"></i>
           </div>
-          <h5 class="card-title">Conversion Rate</h5>
-          <h2 class="text-warning mb-0"><?= number_format($conversion_rate, 1) ?>%</h2>
+          <h5 class="card-title text-danger">Conversion Rate</h5>
+          <h2 class="text-danger mb-0"><?= number_format($conversion_rate, 1) ?>%</h2>
           <small class="text-muted">Customer conversion</small>
         </div>
       </div>
