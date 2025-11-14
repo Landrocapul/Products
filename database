@@ -13,6 +13,11 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Insert sample users
+INSERT INTO users (username, email, password, role) VALUES
+('seller1', 'seller1@gmail.com', '$2y$10$i0T/gVP2dfKqGRaAMNmhO.Xx973IjrJkJqI0Z9dpdZORdiB0hs8oe', 'seller'),
+('consumer1', 'consumer1@gmail.com', '$2y$10$i0T/gVP2dfKqGRaAMNmhO.Xx973IjrJkJqI0Z9dpdZORdiB0hs8oe', 'consumer');
+
 -- Categories table
 CREATE TABLE categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -22,6 +27,14 @@ CREATE TABLE categories (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE KEY unique_category_per_user (name, created_by)
 );
+
+-- Insert sample categories
+INSERT INTO categories (name, created_by) VALUES
+('Electronics', 1),
+('Clothing', 1),
+('Home & Garden', 1),
+('Sports & Outdoors', 1),
+('Books', 1);
 
 -- Products table
 CREATE TABLE products (
@@ -38,6 +51,19 @@ CREATE TABLE products (
     FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
+
+-- Insert sample products
+INSERT INTO products (name, description, price, category_id, status, stock_quantity, seller_id) VALUES
+('Wireless Bluetooth Headphones', 'High-quality wireless headphones with noise cancellation and 30-hour battery life.', 89.99, 1, 'active', 50, 1),
+('Mechanical Gaming Keyboard', 'RGB backlit mechanical keyboard with blue switches for gaming enthusiasts.', 129.99, 1, 'active', 25, 1),
+('Cotton T-Shirt', 'Comfortable 100% cotton t-shirt available in multiple colors and sizes.', 19.99, 2, 'active', 100, 1),
+('Garden Hose 50ft', 'Durable garden hose with brass fittings and adjustable spray nozzle.', 34.99, 3, 'active', 30, 1),
+('Yoga Mat', 'Non-slip yoga mat perfect for home workouts and fitness classes.', 24.99, 4, 'active', 40, 1),
+('Programming Book', 'Comprehensive guide to modern web development with practical examples.', 49.99, 5, 'active', 15, 1),
+('Smart Watch', 'Fitness tracking smartwatch with heart rate monitor and GPS.', 199.99, 1, 'active', 20, 1),
+('Denim Jeans', 'Classic fit denim jeans made from premium cotton blend.', 79.99, 2, 'active', 35, 1),
+('LED Desk Lamp', 'Adjustable LED desk lamp with multiple brightness settings.', 45.99, 3, 'active', 22, 1),
+('Basketball', 'Professional grade basketball for indoor and outdoor use.', 29.99, 4, 'active', 18, 1);
 
 -- Tags table
 CREATE TABLE tags (

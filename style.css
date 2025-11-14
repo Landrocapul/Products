@@ -227,8 +227,11 @@ label {
 }
 
 /* --- FORMS --- */
-.form-group {
-    margin-bottom: 1.25rem;
+.form-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 20px;
 }
 
 input[type="text"],
@@ -901,6 +904,18 @@ textarea:focus {
     color: var(--button-bg);
 }
 
+/* Seller name below price */
+.product-seller {
+    margin-bottom: 12px;
+}
+
+.seller-name {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    font-weight: 500;
+}
+
 .price {
     font-size: 1.4rem;
     font-weight: 700;
@@ -1095,6 +1110,161 @@ textarea:focus {
 .checkout-notice p {
     margin-bottom: 20px;
     color: var(--text-color);
+}
+
+.checkout-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.checkout-summary, .checkout-form-section {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid var(--card-border);
+}
+
+.checkout-summary h2, .checkout-form-section h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.checkout-items {
+    margin-bottom: 20px;
+}
+
+.checkout-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--table-border);
+}
+
+.checkout-item:last-child {
+    border-bottom: none;
+}
+
+.checkout-item h4 {
+    margin: 0 0 5px 0;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.checkout-item p {
+    margin: 0;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.item-total {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.checkout-total {
+    padding: 15px 0;
+    border-top: 2px solid var(--table-border);
+    text-align: right;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.checkout-submit-btn {
+    width: 100%;
+    background: var(--button-bg);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 20px;
+}
+
+.checkout-submit-btn:hover {
+    background: var(--button-hover);
+}
+
+.checkout-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Order Success Page */
+.order-success {
+    text-align: center;
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 40px 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid var(--card-border);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.success-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.order-success h2 {
+    color: var(--text-color);
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+}
+
+.order-details {
+    text-align: left;
+    background: var(--table-header-bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.order-details p {
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.order-details strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+
+.order-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive Checkout */
+@media (max-width: 768px) {
+    .checkout-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .checkout-summary, .checkout-form-section {
+        padding: 20px;
+    }
+
+    .order-actions {
+        flex-direction: column;
+    }
+
+    .order-actions .button {
+        width: 100%;
+    }
 }
 
 /* --- Success Messages --- */
@@ -1318,10 +1488,14 @@ textarea:focus {
     font-size: 0.9rem;
 }
 
-.filter-group select:focus,
-.filter-group input[type="number"]:focus {
-    border-color: var(--button-bg);
-    outline: none;
+.sidebar-search-input::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
+}
+
+.filter-group input[type="number"]::placeholder {
+    color: var(--text-color);
+    opacity: 0.6;
 }
 
 .filter-actions {

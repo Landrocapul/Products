@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'consumer') {
 $user_id = $_SESSION['user_id'];
 $user_role = $_SESSION['role'];
 
+// Debug: Check user session
+error_log("User ID: " . $user_id);
+error_log("User Role: " . $user_role);
+
 $action = $_GET['action'] ?? 'browse';
 
 // Handle add to cart
@@ -18,20 +22,26 @@ if ($action === 'add_to_cart' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $product_id = (int)$_POST['product_id'];
     $quantity = (int)($_POST['quantity'] ?? 1);
 
+    error_log("Add to cart - User ID: " . $user_id . ", Product ID: " . $product_id . ", Quantity: " . $quantity);
+
     if ($quantity > 0) {
         // Check if item already in cart
         $stmt = $pdo->prepare("SELECT id, quantity FROM cart WHERE user_id = :uid AND product_id = :pid");
         $stmt->execute(['uid' => $user_id, 'pid' => $product_id]);
         $existing = $stmt->fetch();
 
+        error_log("Existing cart item: " . print_r($existing, true));
+
         if ($existing) {
             // Update quantity
             $stmt = $pdo->prepare("UPDATE cart SET quantity = quantity + :qty WHERE id = :id");
             $stmt->execute(['qty' => $quantity, 'id' => $existing['id']]);
+            error_log("Updated cart item quantity");
         } else {
             // Add new item
             $stmt = $pdo->prepare("INSERT INTO cart (user_id, product_id, quantity) VALUES (:uid, :pid, :qty)");
             $stmt->execute(['uid' => $user_id, 'pid' => $product_id, 'qty' => $quantity]);
+            error_log("Added new cart item");
         }
     }
     header("Location: shop.php?added=1");
@@ -75,7 +85,124 @@ if ($action === 'cart') {
     $stmt->execute(['uid' => $user_id]);
     $cart_items = $stmt->fetchAll();
 
+    // Debug: Check cart contents
+    error_log("User ID: " . $user_id);
+    error_log("Cart items count: " . count($cart_items));
+    if (!empty($cart_items)) {
+        error_log("First cart item: " . print_r($cart_items[0], true));
+    }
+
     $cart_total = array_sum(array_column($cart_items, 'total'));
+}
+
+// Handle checkout
+if ($action === 'checkout') {
+    // Get cart items for checkout
+    $stmt = $pdo->prepare("
+        SELECT c.*, p.name, p.price, p.stock_quantity,
+               (c.quantity * p.price) as total
+        FROM cart c
+        JOIN products p ON c.product_id = p.id
+        WHERE c.user_id = :uid AND p.status = 'active'
+        ORDER BY c.added_at DESC
+    ");
+    $stmt->execute(['uid' => $user_id]);
+    $checkout_items = $stmt->fetchAll();
+    $checkout_total = array_sum(array_column($checkout_items, 'total'));
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
+        // Validate required fields
+        $shipping_name = trim($_POST['shipping_name'] ?? '');
+        $shipping_email = trim($_POST['shipping_email'] ?? '');
+        $shipping_address = trim($_POST['shipping_address'] ?? '');
+        $payment_method = $_POST['payment_method'] ?? '';
+
+        if (empty($shipping_name) || empty($shipping_email) || empty($shipping_address) || empty($payment_method)) {
+            $checkout_error = "All fields are required.";
+        } elseif (empty($checkout_items)) {
+            $checkout_error = "Your cart is empty.";
+        } else {
+            // Generate order number
+            $order_number = 'ORD-' . date('Ymd') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+            // Start transaction
+            $pdo->beginTransaction();
+            try {
+                // Create order
+                $order_stmt = $pdo->prepare("
+                    INSERT INTO orders (order_number, user_id, total_amount, status, shipping_address, payment_method)
+                    VALUES (:order_num, :user_id, :total, 'pending', :address, :payment)
+                ");
+                $order_stmt->execute([
+                    'order_num' => $order_number,
+                    'user_id' => $user_id,
+                    'total' => $checkout_total,
+                    'address' => $shipping_address,
+                    'payment' => $payment_method
+                ]);
+
+                $order_id = $pdo->lastInsertId();
+
+                // Create order items and update stock
+                foreach ($checkout_items as $item) {
+                    // Insert order item
+                    $item_stmt = $pdo->prepare("
+                        INSERT INTO order_items (order_id, product_id, quantity, unit_price, total_price)
+                        VALUES (:order_id, :product_id, :quantity, :unit_price, :total_price)
+                    ");
+                    $item_stmt->execute([
+                        'order_id' => $order_id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['price'],
+                        'total_price' => $item['total']
+                    ]);
+
+                    // Update product stock
+                    $stock_stmt = $pdo->prepare("
+                        UPDATE products SET stock_quantity = stock_quantity - :qty
+                        WHERE id = :product_id AND stock_quantity >= :qty
+                    ");
+                    $stock_stmt->execute([
+                        'qty' => $item['quantity'],
+                        'product_id' => $item['product_id']
+                    ]);
+                }
+
+                // Clear cart
+                $clear_cart_stmt = $pdo->prepare("DELETE FROM cart WHERE user_id = :uid");
+                $clear_cart_stmt->execute(['uid' => $user_id]);
+
+                $pdo->commit();
+
+                // Redirect to success page
+                header("Location: shop.php?action=order_success&order_id=" . $order_id);
+                exit;
+
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                $checkout_error = "Failed to process order. Please try again.";
+            }
+        }
+    }
+}
+
+// Handle order success
+if ($action === 'order_success') {
+    $order_id = (int)($_GET['order_id'] ?? 0);
+    if ($order_id > 0) {
+        // Get order details
+        $order_stmt = $pdo->prepare("
+            SELECT o.*, GROUP_CONCAT(oi.quantity, 'x ', p.name SEPARATOR '; ') as items
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            WHERE o.id = :order_id AND o.user_id = :user_id
+            GROUP BY o.id
+        ");
+        $order_stmt->execute(['order_id' => $order_id, 'user_id' => $user_id]);
+        $order_details = $order_stmt->fetch();
+    }
 }
 
 // Get cart count for header
@@ -122,9 +249,10 @@ if ($action === 'browse') {
 
     // Get products
     $stmt = $pdo->prepare("
-        SELECT p.*, c.name AS category_name, GROUP_CONCAT(DISTINCT t.name) as tags
+        SELECT p.*, c.name AS category_name, u.username AS seller_name, GROUP_CONCAT(DISTINCT t.name) as tags
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN users u ON p.seller_id = u.id
         LEFT JOIN product_tags pt ON p.id = pt.product_id
         LEFT JOIN tags t ON pt.tag_id = t.id
         WHERE $where_clause
@@ -280,6 +408,9 @@ if ($action === 'browse') {
                                         <div class="product-price-above">
                                             <span class="price">$<?= number_format($product['price'], 2) ?></span>
                                         </div>
+                                        <div class="product-seller">
+                                            <span class="seller-name">👤 Sold by: <?= htmlspecialchars($product['seller_name'] ?? 'Unknown') ?></span>
+                                        </div>
                                         <p class="product-description">
                                             <?= htmlspecialchars(substr($product['description'] ?? '', 0, 100)) ?>
                                             <?php if (strlen($product['description'] ?? '') > 100): ?>...<?php endif; ?>
@@ -313,6 +444,16 @@ if ($action === 'browse') {
                 <?php elseif ($action === 'cart'): ?>
                     <!-- Shopping Cart Page -->
                     <h1>Your Shopping Cart</h1>
+
+                    <!-- Debug Info -->
+                    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc;">
+                        <strong>Debug Info:</strong><br>
+                        User ID: <?= $user_id ?><br>
+                        User Role: <?= $user_role ?><br>
+                        Cart Items Count: <?= count($cart_items) ?><br>
+                        Cart Total: $<?= number_format($cart_total, 2) ?><br>
+                        Session Data: <?= print_r($_SESSION, true) ?>
+                    </div>
 
                     <?php if (isset($_GET['updated'])): ?>
                         <div class="success-message">Cart updated successfully!</div>
@@ -361,11 +502,111 @@ if ($action === 'browse') {
                 <?php elseif ($action === 'checkout'): ?>
                     <!-- Checkout Page -->
                     <h1>Checkout</h1>
-                    <div class="checkout-notice">
-                        <p>🚧 Checkout functionality coming soon!</p>
-                        <p>This is where customers would enter shipping information and payment details.</p>
-                        <a href="shop.php?action=cart">← Back to Cart</a>
-                    </div>
+
+                    <?php if (isset($checkout_error)): ?>
+                        <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                            <?= htmlspecialchars($checkout_error) ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (empty($checkout_items)): ?>
+                        <div class="checkout-notice">
+                            <p>Your cart is empty.</p>
+                            <a href="shop.php?action=browse">← Continue Shopping</a>
+                        </div>
+                    <?php else: ?>
+                        <div class="checkout-container">
+                            <!-- Order Summary -->
+                            <div class="checkout-summary">
+                                <h2>Order Summary</h2>
+                                <div class="checkout-items">
+                                    <?php foreach ($checkout_items as $item): ?>
+                                        <div class="checkout-item">
+                                            <div class="item-info">
+                                                <h4><?= htmlspecialchars($item['name']) ?></h4>
+                                                <p>$<?= number_format($item['price'], 2) ?> × <?= $item['quantity'] ?></p>
+                                            </div>
+                                            <div class="item-total">
+                                                $<?= number_format($item['total'], 2) ?>
+                                            </div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <div class="checkout-total">
+                                    <strong>Total: $<?= number_format($checkout_total, 2) ?></strong>
+                                </div>
+                            </div>
+
+                            <!-- Checkout Form -->
+                            <div class="checkout-form-section">
+                                <h2>Shipping & Payment</h2>
+                                <form method="post" action="shop.php?action=checkout">
+                                    <div class="form-group">
+                                        <label for="shipping_name">Full Name</label>
+                                        <input type="text" id="shipping_name" name="shipping_name" required
+                                               value="<?= htmlspecialchars($_SESSION['username'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping_email">Email Address</label>
+                                        <input type="email" id="shipping_email" name="shipping_email" required
+                                               value="<?= htmlspecialchars($_SESSION['email'] ?? '') ?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="shipping_address">Shipping Address</label>
+                                        <textarea id="shipping_address" name="shipping_address" rows="3" required
+                                                  placeholder="Enter your full shipping address"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="payment_method">Payment Method</label>
+                                        <select name="payment_method" id="payment_method" required>
+                                            <option value="">Select Payment Method</option>
+                                            <option value="credit_card">Credit Card</option>
+                                            <option value="debit_card">Debit Card</option>
+                                            <option value="paypal">PayPal</option>
+                                            <option value="bank_transfer">Bank Transfer</option>
+                                            <option value="cash_on_delivery">Cash on Delivery</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" name="place_order" class="checkout-submit-btn">
+                                        Place Order - $<?= number_format($checkout_total, 2) ?>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="checkout-actions">
+                            <a href="shop.php?action=cart" class="button secondary-button">← Back to Cart</a>
+                        </div>
+                    <?php endif; ?>
+
+                <?php elseif ($action === 'order_success'): ?>
+                    <!-- Order Success Page -->
+                    <h1>🎉 Order Placed Successfully!</h1>
+
+                    <?php if (isset($order_details)): ?>
+                        <div class="order-success">
+                            <div class="success-icon">✅</div>
+                            <h2>Thank you for your order!</h2>
+                            <div class="order-details">
+                                <p><strong>Order Number:</strong> <?= htmlspecialchars($order_details['order_number']) ?></p>
+                                <p><strong>Total Amount:</strong> $<?= number_format($order_details['total_amount'], 2) ?></p>
+                                <p><strong>Status:</strong> <?= ucfirst($order_details['status']) ?></p>
+                                <p><strong>Items:</strong> <?= htmlspecialchars($order_details['items']) ?></p>
+                                <p><strong>Shipping Address:</strong><br>
+                                   <?= nl2br(htmlspecialchars($order_details['shipping_address'])) ?></p>
+                                <p><strong>Payment Method:</strong> <?= ucfirst(str_replace('_', ' ', $order_details['payment_method'])) ?></p>
+                            </div>
+                            <div class="order-actions">
+                                <a href="shop.php?action=browse" class="button">Continue Shopping</a>
+                                <a href="account.php" class="button secondary-button">View Account</a>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <div class="error-message">
+                            <p>Order details not found.</p>
+                            <a href="shop.php?action=browse">← Continue Shopping</a>
+                        </div>
+                    <?php endif; ?>
+
                 <?php endif; ?>
             </div>
         </main>

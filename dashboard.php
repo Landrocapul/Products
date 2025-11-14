@@ -887,8 +887,8 @@ if ($action === '') {
   </script>
   <?php endif; ?>
 
-<?php endif; ?>
-</main>
 
+</main>
 </body>
+<?php endif; ?>
 </html>
