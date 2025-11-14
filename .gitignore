@@ -1,7 +1,5 @@
 # Environment variables with sensitive data
 .env
-.env.local
-.env.production
 
 # Database files
 *.sql
