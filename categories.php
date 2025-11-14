@@ -117,9 +117,6 @@ $categories = $stmt->fetchAll();
     <li><a href="categories.php" class="active">
         <span class="menu-icon">🗂️</span> <span>Categories</span>
     </a></li>
-    <li><a href="#">
-        <span class="menu-icon">🏬</span> <span>Stores</span>
-    </a></li>
   </ul>
   <ul class="sidebar-menu logout-menu">
     <li><a href="logout.php"><span class="menu-icon">🚪</span> <span>Logout</span></a></li>

@@ -297,7 +297,6 @@ if ($action === 'products') {
 
 // Fetch data for Home Dashboard (default action)
 if ($action === '') {
-  // 1. Total products
   $stmt_count = $pdo->prepare("SELECT COUNT(*) FROM products WHERE seller_id = :uid");
   $stmt_count->execute(['uid' => $user_id]);
   $total_products = $stmt_count->fetchColumn();
@@ -507,9 +506,6 @@ if ($action === '') {
     </a></li>
     <li><a href="categories.php">
         <span class="menu-icon">🗂️</span> <span>Categories</span>
-    </a></li>
-    <li><a href="#">
-        <span class="menu-icon">🏬</span> <span>Stores</span>
     </a></li>
   </ul>
   <ul class="sidebar-menu logout-menu">
@@ -764,7 +760,7 @@ if ($action === '') {
                 </td>
                 <td><?= (new DateTime($p['created_at']))->format('M j, Y') ?></td>
                 <td>
-                  <a href="dashboard.php?action=edit&id=<?= $p['id'] ?>" class="action-link">Edit</a>
+                  <a href="dashboard.php?action=edit&id=<?= $p['id'] ?>" class="action-link edit-link">Edit</a>
                   <a href="dashboard.php?action=delete&id=<?= $p['id'] ?>" class="action-link delete-link" onclick="return confirm('Are you sure?');">Delete</a>
                 </td>
               </tr>
@@ -780,7 +776,6 @@ if ($action === '') {
           $params = $_GET;
           unset($params['page']); // Remove page from params for clean URLs
 
-          // Previous button
           if ($page > 1): ?>
             <a href="?<?= http_build_query(array_merge($params, ['page' => $page - 1])) ?>" class="pagination-link">&laquo; Previous</a>
           <?php endif; ?>
@@ -789,13 +784,11 @@ if ($action === '') {
           $start_page = max(1, $page - 2);
           $end_page = min($total_pages, $page + 2);
 
-          // First page
           if ($start_page > 1): ?>
             <a href="?<?= http_build_query(array_merge($params, ['page' => 1])) ?>" class="pagination-link">1</a>
             <?php if ($start_page > 2): ?><span class="pagination-ellipsis">...</span><?php endif; ?>
           <?php endif; ?>
 
-          // Page numbers
           <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
             <?php if ($i == $page): ?>
               <span class="pagination-link current"><?= $i ?></span>
@@ -804,13 +797,11 @@ if ($action === '') {
             <?php endif; ?>
           <?php endfor; ?>
 
-          // Last page
           <?php if ($end_page < $total_pages): ?>
             <?php if ($end_page < $total_pages - 1): ?><span class="pagination-ellipsis">...</span><?php endif; ?>
             <a href="?<?= http_build_query(array_merge($params, ['page' => $total_pages])) ?>" class="pagination-link"><?= $total_pages ?></a>
           <?php endif; ?>
 
-          // Next button
           <?php if ($page < $total_pages): ?>
             <a href="?<?= http_build_query(array_merge($params, ['page' => $page + 1])) ?>" class="pagination-link">Next &raquo;</a>
           <?php endif; ?>
@@ -870,7 +861,8 @@ if ($action === '') {
         });
       }
     });
-  </script> <?php else: // $action === '' (The new Home Dashboard) ?>
+  </script>
+<?php else: // $action === '' (The new Home Dashboard) ?>
   <h1>Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</h1>
   <p>Here is a comprehensive overview of your business performance.</p>
   
@@ -1159,9 +1151,28 @@ if ($action === '') {
   </script>
   <?php endif; ?>
 
+  <script>
+    // Theme toggle functionality for home dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      const themeToggle = document.querySelector('.theme-toggle');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      
+      if (currentTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+      }
+      
+      themeToggle.addEventListener('click', () => {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+      });
+    });
+  </script>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 </main>
 </body>

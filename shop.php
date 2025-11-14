@@ -97,17 +97,25 @@ if ($action === 'cart') {
 
 // Handle checkout
 if ($action === 'checkout') {
-    // Get cart items for checkout
-    $stmt = $pdo->prepare("
-        SELECT c.*, p.name, p.price, p.stock_quantity,
-               (c.quantity * p.price) as total
-        FROM cart c
-        JOIN products p ON c.product_id = p.id
-        WHERE c.user_id = :uid AND p.status = 'active'
-        ORDER BY c.added_at DESC
-    ");
-    $stmt->execute(['uid' => $user_id]);
-    $checkout_items = $stmt->fetchAll();
+    // Get cart items for checkout - only selected ones
+    $selected_items = $_POST['selected_items'] ?? [];
+    
+    if (!empty($selected_items)) {
+        $placeholders = str_repeat('?,', count($selected_items) - 1) . '?';
+        $stmt = $pdo->prepare("
+            SELECT c.*, p.name, p.price, p.stock_quantity,
+                   (c.quantity * p.price) as total
+            FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = :uid AND p.status = 'active' AND c.id IN ($placeholders)
+            ORDER BY c.added_at DESC
+        ");
+        $stmt->execute(array_merge([$user_id], $selected_items));
+        $checkout_items = $stmt->fetchAll();
+    } else {
+        $checkout_items = [];
+    }
+    
     $checkout_total = array_sum(array_column($checkout_items, 'total'));
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
@@ -290,7 +298,7 @@ if ($action === 'browse') {
                     <?php endif; ?>
                 </a>
                 <a href="account.php" class="btn btn-outline-secondary me-3">👤 Account</a>
-                <button class="btn btn-outline-secondary" title="Toggle Theme">
+                <button class="btn btn-outline-secondary" id="theme-toggle" title="Toggle Theme">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193-9.193a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"/>
                     </svg>
@@ -299,7 +307,7 @@ if ($action === 'browse') {
         </div>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container-fluid" style="padding-top: 80px;">
         <div class="row">
             <!-- Sidebar -->
             <div class="col-lg-3 col-md-4">
@@ -458,16 +466,6 @@ if ($action === 'browse') {
                     <!-- Shopping Cart Page -->
                     <h1>Your Shopping Cart</h1>
 
-                    <!-- Debug Info -->
-                    <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc;">
-                        <strong>Debug Info:</strong><br>
-                        User ID: <?= $user_id ?><br>
-                        User Role: <?= $user_role ?><br>
-                        Cart Items Count: <?= count($cart_items) ?><br>
-                        Cart Total: $<?= number_format($cart_total, 2) ?><br>
-                        Session Data: <?= print_r($_SESSION, true) ?>
-                    </div>
-
                     <?php if (isset($_GET['updated'])): ?>
                         <div class="success-message">Cart updated successfully!</div>
                     <?php endif; ?>
@@ -479,10 +477,26 @@ if ($action === 'browse') {
                         </div>
                     <?php else: ?>
                         <div class="cart-container">
+                            <div class="cart-header">
+                                <div class="select-all-section">
+                                    <label class="select-all-label">
+                                        <input type="checkbox" id="select-all-items" class="item-checkbox">
+                                        <strong>Select All Items</strong>
+                                    </label>
+                                </div>
+                            </div>
                             <form method="post" action="shop.php?action=cart">
                                 <div class="cart-items">
                                     <?php foreach ($cart_items as $item): ?>
                                         <div class="cart-item">
+                                            <div class="cart-item-checkbox">
+                                                <input type="checkbox" name="selected_items[]" value="<?= $item['id'] ?>" class="item-checkbox" checked>
+                                            </div>
+                                            <div class="cart-item-image">
+                                                <div class="cart-product-image">
+                                                    📦
+                                                </div>
+                                            </div>
                                             <div class="cart-item-info">
                                                 <h4><?= htmlspecialchars($item['name']) ?></h4>
                                                 <p>$<?= number_format($item['price'], 2) ?> each</p>
@@ -636,6 +650,73 @@ if ($action === 'browse') {
                 document.body.setAttribute('data-theme', 'dark');
             }
 
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.body.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                document.body.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+
+            // Cart checkbox functionality
+            const checkboxes = document.querySelectorAll('.item-checkbox:not(#select-all-items)');
+            const selectAllCheckbox = document.getElementById('select-all-items');
+            const cartTotalElement = document.querySelector('.cart-total strong');
+
+            function updateCartTotal() {
+                let total = 0;
+                checkboxes.forEach(checkbox => {
+                    if (checkbox.checked) {
+                        const cartItem = checkbox.closest('.cart-item');
+                        const itemTotalText = cartItem.querySelector('.item-total').textContent;
+                        const itemTotal = parseFloat(itemTotalText.replace('$', ''));
+                        total += itemTotal;
+                    }
+                });
+                cartTotalElement.textContent = '$' + total.toFixed(2);
+            }
+
+            function updateSelectAllState() {
+                const checkedBoxes = document.querySelectorAll('.item-checkbox:not(#select-all-items):checked');
+                const totalBoxes = checkboxes.length;
+                selectAllCheckbox.checked = checkedBoxes.length === totalBoxes;
+                selectAllCheckbox.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < totalBoxes;
+            }
+
+            // Handle select all checkbox
+            selectAllCheckbox.addEventListener('change', () => {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+                updateCartTotal();
+            });
+
+            // Handle individual checkboxes
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updateSelectAllState();
+                    updateCartTotal();
+                });
+            });
+
+            // Initial states
+            updateSelectAllState();
+            updateCartTotal();
+        });
+    </script>
+
+    <!-- Theme Toggle Functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+            }
+
+            // Theme toggle event listener
             themeToggle.addEventListener('click', () => {
                 const currentTheme = document.body.getAttribute('data-theme');
                 const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
