@@ -443,20 +443,9 @@ if ($action === 'browse') {
                                                             <?php endforeach; ?>
                                                         </div>
                                                     <?php endif; ?>
-                                                    <div class="d-flex gap-2">
-                                                        <a href="product.php?id=<?= $product['id'] ?>" class="btn btn-outline-primary btn-sm flex-grow-1">
-                                                            View Details
-                                                        </a>
-                                                        <?php if ($user_role === 'consumer'): ?>
-                                                            <form method="post" action="shop.php?action=add_to_cart" class="d-flex" style="width: 120px;">
-                                                                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                                                <input type="number" name="quantity" value="1" min="1" max="<?= $product['stock_quantity'] ?? 0 ?>" class="form-control form-control-sm" style="width: 60px;">
-                                                                <button type="submit" class="btn btn-primary btn-sm ms-1" <?= ($product['stock_quantity'] ?? 0) <= 0 ? 'disabled' : '' ?>>
-                                                                    <i class="fas fa-cart-plus"></i>
-                                                                </button>
-                                                            </form>
-                                                        <?php endif; ?>
-                                                    </div>
+                                                    <a href="product.php?id=<?= $product['id'] ?>" class="btn btn-primary btn-sm w-100">
+                                                        View Details
+                                                    </a>
                                                 </div>
                                             </div>
                                         </div>
