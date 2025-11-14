@@ -1,0 +1,20 @@
+RewriteEngine On
+
+# Handle PHP files
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Security headers
+<Files *.php>
+    Header always set X-Content-Type-Options nosniff
+</Files>
+
+# PHP settings
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value memory_limit 256M
+php_value max_execution_time 300
+
+# Directory index
+DirectoryIndex index.php
